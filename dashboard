@@ -1,0 +1,105 @@
+"use client";
+import { useEffect, useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
+type Livro = {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    imageLinks?: {
+      thumbnail?: string;
+    };
+  };
+  accessInfo: {
+    webReaderLink?: string;
+  };
+};
+
+export default function Dashboard({ children }: { children: React.ReactNode }) {
+  const [livros, setLivros] = useState<Livro[]>([]);
+
+  useEffect(() => {
+    fetch(
+      "https://www.googleapis.com/books/v1/volumes?q=subject:ficcao&langRestrict=pt&filter=free-ebooks"
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setLivros(data.items || []);
+      });
+  }, []);
+
+  return (
+    <div className="bg-[--gray-bg] h-screen w-screen flex">
+      {/* Sidebar */}
+      <section id="Sidebar">
+        <SidebarProvider>
+          <AppSidebar />
+          <main>
+            <SidebarTrigger />
+            {children}
+          </main>
+        </SidebarProvider>
+      </section>
+
+      {/* Main */}
+      <section id="Main" className="flex flex-col mx-auto">
+        {/* Header */}
+        <div id="Header" className="mt-10">
+          <form action="" method="post">
+            <div className="flex gap-4 w-[600px] bg-[#F6F6F6] p-4 rounded-xl">
+              <img src="/imgs/Search.svg" alt="" />
+              <input
+                type="text"
+                name="pesquisa"
+                id="pesquisa"
+                placeholder="Pesquise por livros, autor, genêro..."
+                className="w-full bg-[#F6F6F6] border-none outline-none"
+              />
+            </div>
+          </form>
+        </div>
+
+        {/* Livros */}
+        <div id="DescubraLivros" className="mt-10">
+          <h2 className="text-xl font-semibold mb-4">Descubra novos livros</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {livros.map((livro) => (
+              <div
+                key={livro.id}
+                className="bg-white shadow rounded-xl p-4 flex flex-col items-center text-center"
+              >
+                {livro.volumeInfo.imageLinks?.thumbnail ? (
+                  <img
+                    src={livro.volumeInfo.imageLinks.thumbnail}
+                    alt={livro.volumeInfo.title}
+                    className="w-32 h-48 object-cover mb-2"
+                  />
+                ) : (
+                  <div className="w-32 h-48 bg-gray-300 flex items-center justify-center mb-2">
+                    Sem capa
+                  </div>
+                )}
+                <p className="font-semibold">{livro.volumeInfo.title}</p>
+                <p className="text-sm text-gray-500">
+                  {livro.volumeInfo.authors?.join(", ") ?? "Autor desconhecido"}
+                </p>
+                {livro.accessInfo.webReaderLink && (
+                  <a
+                    href={livro.accessInfo.webReaderLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Ler
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

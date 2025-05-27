@@ -1,4 +1,5 @@
-// pages/api/google-books.js
+const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}${apiKey ? `&key=${apiKey}` : ''}`;
 export default async function handler(req, res) {
   const { query } = req.query;
 
